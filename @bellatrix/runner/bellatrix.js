@@ -97,7 +97,9 @@ const configs = [
     '.bellatrix.json',
 ];
 
-const configFileURI = pathToFileURL(findFilePath(configs));
+const configFilePath = findFilePath(configs);
+const configFileDir = dirname(configFilePath);
+const configFileURI = pathToFileURL(configFilePath);
 const debugPort = 12016;
 
 let config;
@@ -146,6 +148,15 @@ if (platform() === 'win32') {
     reportPath = win32.normalize(reportPath);
 }
 
+let cbReporterServer;
+// Add CloudBeat as an additional reporter if we are running inside CB agent
+if (typeof process.env.CB_AGENT === 'string' && process.env.CB_AGENT.toLowerCase() === 'true') {
+    const cbReporterServerUrl = new URL(import.meta.resolve('./cloudbeat/CbReporterServer.js')).pathname;
+    const { default: CbReporterServer } = await import(cbReporterServerUrl);
+    cbReporterServer = new CbReporterServer(configFileDir);
+    cbReporterServer.init();
+}
+
 switch (config.frameworkSettings.testSettings.testFramework) {
     case 'vitest': {
         const { createVitest } = await import('vitest/node');
@@ -186,8 +197,12 @@ switch (config.frameworkSettings.testSettings.testFramework) {
 
         const vitest = await createVitest('test', config);
 
+        cbReporterServer?.start();
+
         await vitest.start();
         await vitest?.close();
+
+        cbReporterServer?.stop();
         break;
     }
     case 'playwright': {
@@ -219,6 +234,7 @@ switch (config.frameworkSettings.testSettings.testFramework) {
             execArgv.push(`--inspect=${debugPort}`);
         }
 
+        cbReporterServer?.start();
         const child = fork(cliPath, cliArgs, {
             stdio: 'inherit',
             env: {
@@ -231,6 +247,8 @@ switch (config.frameworkSettings.testSettings.testFramework) {
         // Handle child process events (optional)
         child.on('exit', (code) => {
             console.log(`Child process exited with code ${code}`);
+            cbReporterServer?.stop();
+            process.exit(0);
         });
 
         break;
@@ -239,3 +257,4 @@ switch (config.frameworkSettings.testSettings.testFramework) {
         throw Error(`Test framework not implemented: ${config.frameworkSettings.testSettings.testFramework}`);
     }
 }
+

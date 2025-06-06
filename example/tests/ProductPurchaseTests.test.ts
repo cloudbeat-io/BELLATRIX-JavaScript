@@ -3,7 +3,7 @@ import { Category } from '@bellatrix/core/decorators';
 import { WebTest } from '@bellatrix/web/infrastructure';
 import { Button } from '@bellatrix/web/components';
 import { ExtraWebHooks } from '@bellatrix/extras-web/hooks';
-import { LogLifecyclePlugin, ScreenshotOnFailPlugin } from '@bellatrix/extras-web/plugins';
+import { LogLifecyclePlugin, ScreenshotOnFailPlugin, CloudBeatPlugin } from '@bellatrix/extras-web/plugins';
 import { addPlugin } from '@bellatrix/core/infrastructure';
 import { WebServiceHooks } from '@bellatrix/web/services/utilities';
 import { NavigationService } from '@bellatrix/web/services';
@@ -16,6 +16,9 @@ import { MainPage, CartPage, CheckoutPage, PurchaseInfo } from '../src/pages';
 export class ProductPurchaseTests extends WebTest {
     override async configure(): Promise<void> {
         await super.configure();
+        // FIXME: addPlugin will be called multiple times for each test class.
+        // We need a global hook or a custom report capability so the initialization of CB plugin will be called once per the entire run.
+        addPlugin(CloudBeatPlugin);
         ExtraWebHooks.addComponentBDDLogging();
         addPlugin(LogLifecyclePlugin);
         addPlugin(ScreenshotOnFailPlugin);

@@ -183,6 +183,8 @@ export function getFilteredTestsList<T extends BellatrixTest>(testClassInstance:
             try {
                 await (testMethod as Function).apply(testClassInstance, args);
             } catch (error) {
+                // FIXME: the code below is executed after "after" hooks are executed.
+                // So testMetadata.error inside "after" hook methods metadata has no error object.
                 if (error instanceof Error) {
                     testMetadata.error = error;
                 }
