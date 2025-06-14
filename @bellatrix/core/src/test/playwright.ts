@@ -70,7 +70,6 @@ export function SuiteDecorator<
         nativeLibrary.test.afterEach(async ({ }, testInfo) => {
             const currentTest = currentTestStore.get(target)!;
             const testMetadata = getMetadataFor(currentTest.method!);
-            testMetadata.error = new Error(testInfo.error?.message);
             await testClassSymbolMethods.afterEach.apply(testClassInstance);
             if (!currentTestStore.has(target)) {
                 currentTestStore.set(target, initMetadata(Internal.currentTest, target));

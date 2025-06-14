@@ -125,6 +125,7 @@ export class CbReporterClient  {
         startedCbCase.duration = startedCbCase.endTime - startedCbCase.startTime;
         if (error) {
             startedCbCase.status = ResultStatusEnum.FAILED;
+            startedCbCase.failure = this.getCbFailureFromError(error);
         }
         else {
             startedCbCase.status = ResultStatusEnum.PASSED;
@@ -203,5 +204,21 @@ export class CbReporterClient  {
     private determineSuiteStatus(suiteResult: SuiteResult) {
         const hasFailedCases = suiteResult.cases.some((c: CaseResult) => c.status === ResultStatusEnum.FAILED);
         return hasFailedCases ? ResultStatusEnum.FAILED : ResultStatusEnum.PASSED;
+    }
+
+    private getCbFailureFromError(error: Error) {
+        return {
+            type: this.getCbFailureTypeForError(error),
+            subtype: error.constructor.name,
+            message: error.message,
+            stacktrace: error.stack,
+        };
+    }
+
+    private getCbFailureTypeForError(error: Error): string {
+        if (error.constructor.name === 'BellatrixAssertionError') {
+            return 'ASSERT_ERROR';
+        }
+        return 'GENERAL_ERROR';
     }
 }
