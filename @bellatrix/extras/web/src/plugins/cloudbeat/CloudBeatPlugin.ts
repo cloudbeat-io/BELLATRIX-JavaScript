@@ -67,7 +67,7 @@ export class CloudBeatPlugin extends Plugin {
         }
         // FIXME: how we determine if the test has finished with an error?!
         // metadata.error suppose to contain error object on failed test, but it's empty
-        this.reporterClient?.onCaseEnd(metadata, undefined);
+        this.reporterClient?.onCaseEnd(metadata);
     }
     private onStepStart(stepName: string) {
         this.reporterClient?.onStepStart(stepName);

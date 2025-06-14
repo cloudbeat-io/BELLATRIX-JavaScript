@@ -108,8 +108,8 @@ export class CbReporterClient  {
         cbSuite!.cases.push(newCbCase);
         this.queue.add(this.getEventEmitter('case:start', newCbCase));
     }
-    onCaseEnd(testMetadata: TestMetadata, error?: Error): void {
-        const { suiteName, testName, customData } = testMetadata;
+    onCaseEnd(testMetadata: TestMetadata): void {
+        const { suiteName, testName, customData, error } = testMetadata;
         if (!this.suiteMap.has(suiteName)) {
             return;
         }

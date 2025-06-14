@@ -67,13 +67,14 @@ export function SuiteDecorator<
             await testClassSymbolMethods.beforeEach.apply(testClassInstance);
         });
 
-        nativeLibrary.test.afterEach(async ({ }, _) => {
+        nativeLibrary.test.afterEach(async ({ }, testInfo) => {
+            const currentTest = currentTestStore.get(target)!;
+            const testMetadata = getMetadataFor(currentTest.method!);
+            testMetadata.error = new Error(testInfo.error?.message);
             await testClassSymbolMethods.afterEach.apply(testClassInstance);
             if (!currentTestStore.has(target)) {
                 currentTestStore.set(target, initMetadata(Internal.currentTest, target));
             }
-
-            const currentTest = currentTestStore.get(target)!;
             currentTest.name = null;
             currentTest.method = null;
         });
