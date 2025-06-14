@@ -82,12 +82,20 @@ export function initMetadata<Type extends keyof MetadataTypes>(type: Type, sourc
     }
 }
 
-export function getFilteredTestsList<T extends BellatrixTest>(testClassInstance: T): Map<string, Method<BellatrixTest>> {
+export function getFilteredTestsList<T extends BellatrixTest>(testClassInstance: T, suiteMetadata: SuiteMetadata): Map<string, Method<BellatrixTest>> {
     const testClass = testClassInstance.constructor.prototype;
+    if (suiteMetadata && suiteMetadata['suiteName'] && testFilters['suiteName']) {
+        const filterValue = testFilters['suiteName'];
+        const filterPattern = new RegExp(
+            `${filterValue.endsWith('$') ? '' : '^'}${filterValue}${filterValue.startsWith('^') ? '' : '$'}`
+        );
+        if (!filterPattern.test(suiteMetadata['suiteName'])) {
+            return new Map;
+        }
+    }
     const testMethodsNames = Object.getOwnPropertyNames(testClass)
         .filter(method => typeof testClass[method] === 'function' &&
             getMetadataFor(testClass[method])?.[Internal.hasTestDecorator]);
-
     const tests: Map<string, Method<BellatrixTest>> = new Map;
     for (const testMethodName of testMethodsNames) {
         const testMethod = testClass[testMethodName] as keyof Method<BellatrixTest>;

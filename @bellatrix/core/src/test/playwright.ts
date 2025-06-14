@@ -37,11 +37,10 @@ export function SuiteDecorator<
     This extends BellatrixTest,
     Class extends ParameterlessCtor<This> = ParameterlessCtor<This>
 >(target: Class, context: ClassDecoratorContext<Class>): void {
-    getMetadataFor(target); // init
-
+    const suiteMetadata = getMetadataFor(target); // init
     const testClassInstance = new (target.prototype.constructor as ParameterlessCtor<This>);
     const testClassSymbolMethods = getSymbolMethods(target);
-    const testMethods = getFilteredTestsList(testClassInstance);
+    const testMethods = getFilteredTestsList(testClassInstance, suiteMetadata);
 
     nativeLibrary.defineConfig({ timeout: testSettings.testTimeout });
 

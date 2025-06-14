@@ -22,7 +22,7 @@ export function getMetadataFor<
             suiteMetadataStore.set(testClass, initMetadata(Internal.suiteMetadata, testClass));
         }
 
-        return testMetadataStore.get(testClass) as SuiteMetadata;
+        return suiteMetadataStore.get(testClass) as SuiteMetadata;
     }
 
     const testMethod = testMethodOrClass as ClassMethod;
